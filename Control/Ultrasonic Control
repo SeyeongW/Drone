@@ -1,0 +1,35 @@
+#define TRIG_PIN 30  // 초음파 센서 Trig 핀
+#define ECHO_PIN 31  // 초음파 센서 Echo 핀
+
+void setup() {
+    pinMode(TRIG_PIN, OUTPUT);
+    pinMode(ECHO_PIN, INPUT);
+    Serial.begin(9600);
+    Serial.println("HC-SR04 초음파 센서 시작");
+}
+
+void loop() {
+    long duration, distance;
+
+    // Trig 핀을 LOW로 설정 후 잠시 대기
+    digitalWrite(TRIG_PIN, LOW);
+    delayMicroseconds(2);
+    
+    // Trig 핀을 HIGH로 설정하여 초음파 펄스 발생
+    digitalWrite(TRIG_PIN, HIGH);
+    delayMicroseconds(10);
+    digitalWrite(TRIG_PIN, LOW);
+
+    // Echo 핀에서 반사된 신호 수신
+    duration = pulseIn(ECHO_PIN, HIGH);
+
+    // 거리 계산 (음속: 343m/s -> 0.034cm/us)
+    distance = duration * 0.034 / 2;
+
+    // 거리 값 출력
+    Serial.print("측정 거리: ");
+    Serial.print(distance);
+    Serial.println(" cm");
+
+    delay(500);
+}
