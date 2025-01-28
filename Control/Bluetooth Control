@@ -1,0 +1,91 @@
+#include <Servo.h>
+
+#define ESC1_PIN 9   // ESC1 (Front Left)
+#define ESC2_PIN 10  // ESC2 (Front Right)
+#define ESC3_PIN 11  // ESC3 (Rear Left)
+#define ESC4_PIN 12  // ESC4 (Rear Right)
+
+Servo esc1, esc2, esc3, esc4;
+char command;  // Stores received Bluetooth command
+
+void setup() {
+    Serial.begin(9600);   // Standard serial monitor
+    Serial1.begin(9600);  // Bluetooth module communication (HC-05 / HC-06)
+
+    esc1.attach(ESC1_PIN);
+    esc2.attach(ESC2_PIN);
+    esc3.attach(ESC3_PIN);
+    esc4.attach(ESC4_PIN);
+
+    initializeESC();
+
+    Serial.println("Bluetooth connection is ready.");
+}
+
+void loop() {
+    if (Serial1.available()) {  // Check if data is received from Bluetooth
+        command = Serial1.read();
+        Serial.print("Received command: ");
+        Serial.println(command);
+
+        controlMotors(command);
+    }
+}
+
+// ESC Initialization (Stops all motors)
+void initializeESC() {
+    esc1.writeMicroseconds(1000);
+    esc2.writeMicroseconds(1000);
+    esc3.writeMicroseconds(1000);
+    esc4.writeMicroseconds(1000);
+    delay(3000);  // Wait for ESC calibration
+}
+
+// Motor control function based on Bluetooth commands
+void controlMotors(char cmd) {
+    switch (cmd) {
+        case 'F': // Move Forward
+            esc1.writeMicroseconds(1600); // Front Left (ESC1)
+            esc2.writeMicroseconds(1600); // Front Right (ESC2)
+            esc3.writeMicroseconds(1600); // Rear Left (ESC3)
+            esc4.writeMicroseconds(1600); // Rear Right (ESC4)
+            Serial.println("Motors: Moving Forward");
+            break;
+
+        case 'B': // Move Backward (Adjust diagonal pairs)
+            esc1.writeMicroseconds(1400); // ESC1 (Front Left) Slow down
+            esc2.writeMicroseconds(1600); // ESC2 (Front Right) Speed up
+            esc3.writeMicroseconds(1600); // ESC3 (Rear Left) Speed up
+            esc4.writeMicroseconds(1400); // ESC4 (Rear Right) Slow down
+            Serial.println("Motors: Moving Backward");
+            break;
+
+        case 'L': // Turn Left
+            esc1.writeMicroseconds(1400); // ESC1 (Front Left) Slow down
+            esc2.writeMicroseconds(1600); // ESC2 (Front Right) Speed up
+            esc3.writeMicroseconds(1400); // ESC3 (Rear Left) Slow down
+            esc4.writeMicroseconds(1600); // ESC4 (Rear Right) Speed up
+            Serial.println("Motors: Turning Left");
+            break;
+
+        case 'R': // Turn Right
+            esc1.writeMicroseconds(1600); // ESC1 (Front Left) Speed up
+            esc2.writeMicroseconds(1400); // ESC2 (Front Right) Slow down
+            esc3.writeMicroseconds(1600); // ESC3 (Rear Left) Speed up
+            esc4.writeMicroseconds(1400); // ESC4 (Rear Right) Slow down
+            Serial.println("Motors: Turning Right");
+            break;
+
+        case 'S': // Stop
+            esc1.writeMicroseconds(1000);
+            esc2.writeMicroseconds(1000);
+            esc3.writeMicroseconds(1000);
+            esc4.writeMicroseconds(1000);
+            Serial.println("Motors: Stopped");
+            break;
+
+        default:
+            Serial.println("Unknown command received");
+            break;
+    }
+}
